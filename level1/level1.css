@@ -53,8 +53,6 @@ canvas{
     color:white;
     border-radius:20px;
     font-size:larger;
-    margin-top:10px;
-    margin-right:130px;
     display:inline;
     font-weight: 900;
     border: 4px solid rgb(128, 0, 0);
@@ -70,7 +68,6 @@ canvas{
     color:white;
     border-radius:20px;
     font-size:larger;
-    margin-left:150px;
     font-weight:900;
     border: 4px solid rgb(8, 67, 8); 
 }
@@ -88,5 +85,6 @@ canvas{
     }
  #hehe{
     display:flex;
-    justify-content: space-around;
+    justify-content:flex-end;
+ 
  }
