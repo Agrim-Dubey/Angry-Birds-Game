@@ -12,14 +12,13 @@
     <div id="container1">
         <div id="rulebox">
             <div id="rules"><h2>RULES</h2></div>
-            <div id="info">The Software Incubator lab is being attacked by pigs. <br> <strong> <b> Maqsad :  you need to save it.</b></strong>
+            <div id="info">The Software Incubator lab is being attacked by pigs. <br> <strong> <b style="color:black;"> Maqsad :  you need to save it.</b></strong>
                 <br> <br> <b>
-                1. Kill all the pigs with  the given birds. <br>
+                1. Kill the pig with  the given birds. <br>
                 2. Obtain as much points as possible. <br>
                 3. Kill the king pig to win the  game. <br>
-                4. Obtain 4000 points to clear 1. <br>
-                5. Obtain 7000 points to clear 2. <br>
-                6. Obtain 10000 points to clear level 3. <br> </b>
+                4. Obtain 4000 points to clear level 1. <br>
+                 <br> </b>
             </div>
             <div id="hehe">
             <button id="goback" onclick="window.location.href='../index.html'">Go Back</button>
@@ -27,6 +26,13 @@
             </div>
         </div>
     </div>
+<div id="victoryScreen">
+  <h1>🎉 You Won! 🎉</h1>
+  <p>All pigs defeated. Congratulations!</p>
+  <button id="menuBtn" style="margin:20px; padding:10px 20px; font-size:20px;">Go to Menu</button>
+  <button id="replayBtn" style="margin:20px; padding:10px 20px; font-size:20px;">Play Again</button>
+</div>
+
     <canvas id="canvas"></canvas>
     <script src="level1.js"></script>
 </body>
