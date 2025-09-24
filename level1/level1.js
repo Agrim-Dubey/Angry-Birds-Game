@@ -1,7 +1,7 @@
 window.addEventListener('load', () => {
   try {
     const canvas = document.getElementById("canvas");
-    if (!canvas) { console.error("Canvas element #canvas not found"); return; }
+     }
     const ctx = canvas.getContext("2d");
 
     canvas.height = window.innerHeight;
