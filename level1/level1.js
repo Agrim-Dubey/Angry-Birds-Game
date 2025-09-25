@@ -486,5 +486,5 @@ document.getElementById("replayBtn").addEventListener("click",() =>{
   }
 });
 function returnkaro(){
-  window.location.href='../Home/index.html';
+  window.location.href='../index.html';
 };
