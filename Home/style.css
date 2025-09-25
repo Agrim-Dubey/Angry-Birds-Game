@@ -1,3 +1,9 @@
+canvas{
+    top:0;
+    left:0;
+    position: fixed;
+}
+
 body{
     background : url("../Assets/Background1_imgupscaler.ai_General_8K.jpg") no-repeat center center fixed;
     background-size: cover;

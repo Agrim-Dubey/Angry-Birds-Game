@@ -1,10 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
   function runTransitionAnimation(callback) {
     const canvas = document.getElementById("canvas1");
-    if (!canvas) return callback && callback();
     const ctx = canvas.getContext("2d");
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    Object.assign(canvas.style, {
+      zIndex: 1000,
+      pointerEvents: "none",
+    });
     const sources = [
       "../Assets/character1-removebg-preview.png",
       "../Assets/character2-removebg-preview.png",
@@ -34,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
           alpha: 1,
         };
       });
-      const duration = 5000;
+      const duration = 2000;
       let start = null;
       function animate(time) {
         if (!start) start = time;
