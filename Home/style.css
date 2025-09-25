@@ -1,5 +1,5 @@
 body{
-    background : url("Assets/Background1_imgupscaler.ai_General_8K.jpg") no-repeat center center fixed;
+    background : url("../Assets/Background1_imgupscaler.ai_General_8K.jpg") no-repeat center center fixed;
     background-size: cover;
 }
 body::before {
@@ -68,7 +68,7 @@ body::before {
     font-style: Super Color SVG Font;
     width:150px;
     height:40px;
-    border-radius:20%;
+    border-radius:50%;
     background:rgb(12, 145, 12);
     color:white;
     font-weight: 900;
@@ -76,12 +76,14 @@ body::before {
     margin-right:30px;
     margin-left:30px;
     font-weight:900;
+    border: 5px solid hsl(26, 91%, 50%);
 }
 .options:hover{
     font-size:larger;
     transition: background-color 0.5s ease,color 0.5s ease, transform 0.3s ease-in,font-size 0.3s ease-in  ;
     transform:scale(1.1);
     color:rgb(12, 145, 12);
+    border: 6px solid black;
     background-color:rgba(151, 242, 60, 0.5);
 }
 #firsttwo{
@@ -92,8 +94,3 @@ body::before {
     display:flex;
     justify-content: space-between;
 }
-
-
-
-
-

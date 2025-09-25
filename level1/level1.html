@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Angry-Birds-level1</title>
-    <link rel="shortcut icon" href="Assets/Fevicon-removebg-preview.png" type="image/png">
+    <link rel="shortcut icon" href="../Assets/Fevicon-removebg-preview.png" type="image/png">
     <link rel="stylesheet" href="level1.css">
 </head>
 <body>
@@ -12,25 +12,26 @@
     <div id="container1">
         <div id="rulebox">
             <div id="rules"><h2>RULES</h2></div>
-            <div id="info">The Software Incubator lab is being attacked by pigs. <br> <strong> <b style="color:black;"> Goal :  you need to save it.</b></strong>
+            <div id="info">The Software Incubator lab is being attacked by pigs. <br> <strong> <b style="color:black;"> GOAL : YOU NEED TO SAVE IT!!!</b></strong>
                 <br> <br> <b>
                 1. Kill the pig with  the given birds. <br>
                 2. Obtain as much points as possible. <br>
-                3. Kill the king pig to win the  game. <br>
+                3. Kill the king pig to win the game. <br>
                 4. Obtain 4000 points to clear level 1. <br>
                  <br> </b>
             </div>
             <div id="hehe">
-            <button id="goback" onclick="window.location.href='../index.html'">Go Back</button>
+            <button id="goback" onclick="window.location.href='../Home/index.html'">Go Back</button>
             <button id="play">Play</button>
             </div>
         </div>
     </div>
 <div id="victoryScreen">
-  <h1>🎉 You Won! 🎉</h1>
-  <p>All pigs defeated. Congratulations!</p>
-  <button id="menuBtn" style="margin:20px; padding:10px 20px; font-size:20px;">Go to Menu</button>
-  <button id="replayBtn" style="margin:20px; padding:10px 20px; font-size:20px;">Play Again</button>
+  <h1>🎇🎇🎉 You Won! 🎉🎇🎇</h1>
+  <p id="tagline">All pigs defeated. Congratulations!</p>
+  <button class="Dusrebuttons" id="menuBtn"  onclick="returnkaro()">Go to Main Menu.</button>
+  <button class="Dusrebuttons" id="nextlevel">Go to Level-2</button>
+  <button class="Dusrebuttons"id="replayBtn" onclick="window.location.href='level1.html'">Play This Level Again</button>
 </div>
 
     <canvas id="canvas"></canvas>

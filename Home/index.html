@@ -4,23 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Angry-birds</title>
-    <link rel="shortcut icon" href="Assets/Fevicon-removebg-preview.png" type="image/.png">
+    <link rel="shortcut icon" href="../Assets/Fevicon-removebg-preview.png" type="image/.png">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div id="container1">
     <div id="container2">
-        <div id="imagecontainer"><img src="Assets/Fevicon-removebg-preview.png" alt="angrybirdlogo"></div>
+        <div id="imagecontainer"><img src="../Assets/Fevicon-removebg-preview.png" alt="angrybirdlogo"></div>
         <div id="optioncontainer">
             <div id="firsttwwo">
-            <button class="options" id="play" data-target="level1/level1.html">PLAY</button>
-            <button class="options" id="quit" data-target="about:blank">QUIT</button>
+            <button class="options" id="play" data-target="../level1/level1.html">PLAY</button>
+            <button class="options" id="quit" onclick= "window.close()">QUIT</button>
             </div>
-           
         </div>
     </div>
 </div>
-<audio src="audios/02. Angry Birds Theme.mp3" autoplay loop>   </audio>
+<audio src="../audios/02. Angry Birds Theme.mp3" autoplay loop></audio>
 <canvas id="canvas1"></canvas>
 <script src="script.js"></script>
 </body>

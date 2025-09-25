@@ -1,7 +1,7 @@
 window.addEventListener('load', () => {
   try {
     const canvas = document.getElementById("canvas");
-     }
+    if (!canvas) { console.error("Canvas element #canvas not found"); return; }
     const ctx = canvas.getContext("2d");
 
     canvas.height = window.innerHeight;
@@ -11,7 +11,7 @@ window.addEventListener('load', () => {
     background.src = "../Assets/level1background.jpg";
 
     let alpha = 0;
-    const fade_time = 1000;
+    const fade_time = 2000;
     let start_time = 0;
     let gameStarted = false;
 
@@ -22,10 +22,10 @@ window.addEventListener('load', () => {
       "../Assets/character4-removebg-preview.png"
     ];
 
-    const bird_size = 50;
+    const bird_size = 35;
     const birds = [];
-    const bird_y = canvas.height - 140;
-    const left_region_width = canvas.width * 0.3;
+    const bird_y = canvas.height - 135;
+    const left_region_width = canvas.width * 0.2;
     const max_birds_fit = Math.floor(left_region_width / bird_size);
     const num_of_birds = Math.max(1, max_birds_fit);
 
@@ -42,14 +42,17 @@ window.addEventListener('load', () => {
         scale: 0,
         loaded: false,
         onsling: false,
-        vx: 0, vy: 0, launched: false
+        vx: 0, vy: 0, launched: false,
+        
+        picking: false,
+    
       };
       birds.push(bird);
       img.onload = () => { bird.loaded = true; };
-      img.onerror = () => { console.warn("Bird image failed to load:", img.src); };
+      img.onerror = () => { console.warn("Bird image failed to load:", img.src); bird.loaded = true; };
     }
 
-    const block_size = 40;
+    const block_size = 30;
     const blocks = [];
     const pigs = [];
     let score = 0;
@@ -59,22 +62,22 @@ window.addEventListener('load', () => {
       blocks.length = 0;
       pigs.length = 0;
 
-      const base_y = bird_y - 40;
-      const num_columns = Math.floor(Math.random() * 3) + 7;
-      const max_column_height = 8;
+      const base_y = bird_y;
+      const numcolumns = Math.floor(Math.random() * 3) + 7;
+      const maxcolumnheight = 8;
 
-      for (let col = 0; col < num_columns; col++) {
-        const col_height = Math.floor(Math.random() * max_column_height) + 1;
-        const col_x = canvas.width * 0.6 + col * (block_size + 10);
+      for (let col = 0; col < numcolumns; col++) {
+        const colheight = Math.floor(Math.random() * maxcolumnheight) + 1;
+        const colx = canvas.width * 0.6 + col * (block_size + 10);
 
-        for (let row = 0; row < col_height; row++) {
+        for (let row = 0; row < colheight; row++) {
           const y = base_y - row * block_size;
           const img = new Image();
           img.src = "../Assets/woodenblocks.png";
-          const block = { img, x: col_x, y, width: block_size, height: block_size, loaded: false };
+          const block = { img, x: colx, y, width: block_size, height: block_size, loaded: false };
           blocks.push(block);
           img.onload = () => { block.loaded = true; };
-          img.onerror = () => { console.warn("Block image failed to load:", img.src); };
+          img.onerror = () => { console.warn("Block image failed to load:", img.src); block.loaded = true; };
         }
       }
 
@@ -83,12 +86,12 @@ window.addEventListener('load', () => {
       const tallest_y = Math.min(...blocks.map(b => b.y));
       const top_blocks = blocks.filter(b => b.y === tallest_y);
       const pig_block = top_blocks[Math.floor(Math.random() * top_blocks.length)];
-      const pig_img = new Image();
-      pig_img.src = "../Assets/pigs.png";
-      const pig = { img: pig_img, x: pig_block.x, y: pig_block.y - block_size, width: block_size, height: block_size, loaded: false, hit: false };
+      const pigimg = new Image();
+      pigimg.src="../Assets/basicpig.png"
+      const pig = { img: pigimg, x: pig_block.x, y: pig_block.y - block_size, width: block_size, height: block_size, loaded: false, hit: false };
       pigs.push(pig);
-      pig_img.onload = () => { pig.loaded = true; };
-      pig_img.onerror = () => { console.warn("Pig image failed to load:", pig_img.src); };
+      pigimg.onload = () => { pig.loaded = true; };
+      pigimg.onerror = () => { console.warn("Pig image failed to load:", pigimg.src); pig.loaded = true; };
     }
 
     function all_images_loaded() {
@@ -99,11 +102,11 @@ window.addEventListener('load', () => {
 
     const slinger = {
       baseX: 0,
-      baseY: bird_y,
-      arm_length: 60,
-      forkOffsetY: -70,
+      baseY: bird_y+20,
+      arm_length: 50,
+      forkOffsetY: -60,
       held_bird: null,
-      radius: 80
+      radius: 100
     };
 
     let dragging = false;
@@ -133,7 +136,7 @@ window.addEventListener('load', () => {
     function draw_slinger() {
       const { forkX, forkY, leftX, rightX } = getSlingGeometry();
       ctx.strokeStyle = "#654321";
-      ctx.lineWidth = 8;
+      ctx.lineWidth = 10;
 
       ctx.beginPath();
       ctx.moveTo(slinger.baseX, slinger.baseY);
@@ -194,10 +197,12 @@ window.addEventListener('load', () => {
         animationId = null;
       }
 
-      if (message === "You won!") {
+      if (message === "You Won!") {
         const victoryScreen = document.getElementById("victoryScreen");
         if (victoryScreen) {
-          victoryScreen.style.display = 'flex';
+          setTimeout(()=> {
+            victoryScreen.style.display="flex";
+          },3000)
         }
       } else {
    
@@ -220,7 +225,7 @@ window.addEventListener('load', () => {
 
           if (distance < combinedRadii) {
             pigs.splice(i, 1);
-            score += 4000;
+            score += 1000;
           }
         }
 
@@ -233,8 +238,8 @@ window.addEventListener('load', () => {
           if (distance < combinedRadii) {
             blocks.splice(i, 1);
             score += 500;
-            bird.vx *= 0.5;
-            bird.vy *= 0.5;
+            bird.vx *= 0.7; 
+            bird.vy *= 0.7;
           }
         }
       }
@@ -244,7 +249,7 @@ window.addEventListener('load', () => {
 
         if (pig.y > canvas.height) {
           pigs.splice(i, 1);
-          score += 1000;
+          score += 500;
           continue;
         }
 
@@ -257,7 +262,7 @@ window.addEventListener('load', () => {
       }
       
       if (gameStarted && pigs.length === 0 && birds.some(bird => bird.launched)) {
-        endGame("You won!");
+        endGame("You Won!");
       }
     }
 
@@ -281,7 +286,6 @@ window.addEventListener('load', () => {
       }
       ctx.stroke();
     }
-
     canvas.addEventListener("click", (e) => {
       if (!all_images_loaded()) return;
       const mouse_x = e.clientX;
@@ -291,12 +295,22 @@ window.addEventListener('load', () => {
         const bx = b.x;
         const by = b.y;
         if (mouse_x >= bx - size / 2 && mouse_x <= bx + size / 2 && mouse_y >= by - size / 2 && mouse_y <= by + size / 2) {
-          if (!b.launched && !slinger.held_bird) {
-            slinger.held_bird = b;
-            b.onsling = true;
+        
+          if (!b.launched && !slinger.held_bird && !b.picking) {
             const { forkX, forkY } = getSlingGeometry();
-            b.x = forkX;
-            b.y = forkY;
+            b.picking = true;
+            b.pickStartTime = Date.now();
+            b.pickDuration = 600; 
+            b.pickStartX = b.x;
+            b.pickStartY = b.y;
+            b.pickTargetX = forkX;
+            b.pickTargetY = forkY;
+            const dx = b.pickTargetX - b.pickStartX;
+            const dy = b.pickTargetY - b.pickStartY;
+            b.pickArc = Math.max(60, Math.min(220, Math.hypot(dx, dy) * 0.5)); 
+            b.pickRotTurns = 2;
+            b.vx = 0;
+            b.vy = 0;
             break;
           }
         }
@@ -327,7 +341,7 @@ window.addEventListener('load', () => {
         const { forkX, forkY } = getSlingGeometry();
         const dx = forkX - drag_x;
         const dy = forkY - drag_y;
-        const power = 0.22;
+        const power = 0.18;
         const b = slinger.held_bird;
 
         b.vx = dx * power;
@@ -358,7 +372,6 @@ window.addEventListener('load', () => {
         endGame("Game Over! Try again.");
       }
     }
-
     function draw() {
       if (!all_images_loaded()) {
         animationId = requestAnimationFrame(draw);
@@ -373,11 +386,39 @@ window.addEventListener('load', () => {
       ctx.fillStyle = "#fff";
       ctx.font = "30px Arial";
       ctx.fillText("Score: " + score, 20, 40);
-
       birds.forEach(bird => {
-        if (bird !== slinger.held_bird || bird.launched) {
+        if (bird.picking) {
+          const elapsed = Date.now() - bird.pickStartTime;
+          const t = Math.min(1, elapsed / bird.pickDuration);
+          const sx = bird.pickStartX;
+          const sy = bird.pickStartY;
+          const tx = bird.pickTargetX;
+          const ty = bird.pickTargetY;
+          const arc = bird.pickArc || 80;
+          const xPos = sx + (tx - sx) * t;
+          const yPos = sy + (ty - sy) * t - arc * Math.sin(Math.PI * t);
           const size = bird_size * alpha;
-          ctx.drawImage(bird.img, bird.x - size / 2, bird.y - size / 2, size, size);
+          const rot = 2 * Math.PI * (bird.pickRotTurns || 1) * t;
+          ctx.save();
+          ctx.translate(xPos, yPos);
+          ctx.rotate(rot);
+          ctx.drawImage(bird.img, -size / 2, -size / 2, size, size);
+          ctx.restore();
+          if (t >= 1) {
+            bird.picking = false;
+            bird.x = tx;
+            bird.y = ty;
+            bird.vx = 0;
+            bird.vy = 0;
+            bird.onsling = true;
+ 
+            slinger.held_bird = bird;
+          }
+        } else {
+          if (bird !== slinger.held_bird || bird.launched) {
+            const size = bird_size * alpha;
+            ctx.drawImage(bird.img, bird.x - size / 2, bird.y - size / 2, size, size);
+          }
         }
       });
 
@@ -423,15 +464,9 @@ window.addEventListener('load', () => {
       }
       waitForImages();
     }
-
-    document.getElementById("menuBtn").addEventListener("click", () => {
-      window.location.href = "index.html"; 
-    });
-
     document.getElementById("replayBtn").addEventListener("click", () => {
       window.location.reload();
     });
-
     window.addEventListener('resize', () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -441,3 +476,15 @@ window.addEventListener('load', () => {
     console.error("Error initializing level1.js:", err);
   }
 });
+
+document.getElementById("replayBtn").addEventListener("click",() =>{
+  if (score >= 4000){
+    window.location.href="../level2/level2.html";
+  }
+  else{
+    document.getElementById("tagline").textContent = "You dont have enough points to clear this level.";
+  }
+});
+function returnkaro(){
+  window.location.href='../Home/index.html';
+};
