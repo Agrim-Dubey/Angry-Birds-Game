@@ -30,9 +30,9 @@ window.addEventListener('load', () => {
     const bird_size = 35;
     const birds = [];
     let bird_y = canvas.height - 135;
-    const left_region_width = canvas.width * 0.2;
+    const left_region_width = canvas.width * 0.3;
     const max_birds_fit = Math.floor(left_region_width / bird_size);
-    const num_of_birds = Math.max(1, max_birds_fit) -1;
+    const num_of_birds = Math.max(1, max_birds_fit) -2;
 
     for (let i = 0; i < num_of_birds; i++) {
       const random_index = Math.floor(Math.random() * bird_images.length);
@@ -66,9 +66,9 @@ window.addEventListener('load', () => {
       blocks.length = 0;
       pigs.length = 0;
 
-      const base_y = bird_y + 5;
-      const numcolumns = 18;
-      const maxcolumnheight = 12;
+      const base_y = bird_y;
+      const numcolumns = 15;
+      const maxcolumnheight = 10;
 
       for (let col = 0; col < numcolumns; col++) {
         const colheight = Math.floor(Math.random() * maxcolumnheight) + 3;
@@ -100,9 +100,9 @@ window.addEventListener('load', () => {
       const pigPositions = [
         { colIndex: 2, rowOffset: 8 },
         { colIndex: 5, rowOffset: 10 },
-        { colIndex: 9, rowOffset: 11 },
+        { colIndex: 9, rowOffset: 9 },
         { colIndex: 12, rowOffset: 9 },
-        { colIndex: 16, rowOffset: 12 } // King pig
+        { colIndex: 14, rowOffset: 10 } // King pig
       ];
 
       for (let i = 0; i < pigPositions.length; i++) {
@@ -137,7 +137,7 @@ window.addEventListener('load', () => {
       return birds.every(b => b.loaded) && background.complete && blocks_loaded && pigs_loaded;
     }
 
-    const slinger = {
+      const slinger = {
       baseX: 0,
       baseY: bird_y + 20,
       arm_length: 50,
@@ -227,8 +227,7 @@ window.addEventListener('load', () => {
         ctx.stroke();
       }
     }
-
-    function endGame(message) {
+       function endGame(message) {
       if (animationId) {
         cancelAnimationFrame(animationId);
         animationId = null;
@@ -257,22 +256,20 @@ window.addEventListener('load', () => {
           const dx = bird.x - pig.x;
           const dy = bird.y - pig.y;
           const distance = Math.hypot(dx, dy);
-          const combinedRadii = bird_size / 2 + pig.width / 2 + 5;
+          const combinedRadii = bird_size / 2 + pig.width / 2;
+
           if (distance < combinedRadii) {
             const impactSpeed = Math.hypot(bird.vx, bird.vy);
+
             if (impactSpeed > impactThreshold) {
-              if (pig.king) {
-                endGame("You Won!");
-              }
               pigs.splice(i, 1);
-              score += pig.king ? 5000 : 1000;
+              score += 1000;
             } else {
               pig.vx += bird.vx * 0.4;
               pig.vy += bird.vy * 0.4;
             }
           }
         }
-
         for (let i = blocks.length - 1; i >= 0; i--) {
           const block = blocks[i];
           const dx = bird.x - block.x;
@@ -282,6 +279,7 @@ window.addEventListener('load', () => {
 
           if (distance < combinedRadii) {
             const impactSpeed = Math.hypot(bird.vx, bird.vy);
+
             if (impactSpeed > impactThreshold * 1.5) {
               blocks.splice(i, 1);
               score += 200;
@@ -293,26 +291,36 @@ window.addEventListener('load', () => {
         }
       }
 
+      // Physics update for pigs & blocks
       const allObjects = [...blocks, ...pigs];
       for (const obj of allObjects) {
         obj.vy += gravity;
         obj.x += obj.vx;
         obj.y += obj.vy;
 
-        obj.vx *= 0.95;
+        obj.vx *= 0.95; // damping
         obj.vy *= 0.95;
 
+        // clamp to bird-level ground (bird_y)
         const groundY = bird_y;
         if (obj.y + obj.height / 2 > groundY) {
           obj.y = groundY - obj.height / 2;
-          obj.vy *= -0.4;
+          obj.vy *= -0.4; // bounce/damping
+          // small friction on ground
           obj.vx *= 0.6;
         }
 
-        if (obj.x < 0) { obj.x = 0; obj.vx *= -0.3; }
-        else if (obj.x > canvas.width) { obj.x = canvas.width; obj.vx *= -0.3; }
+        // keep inside canvas roughly
+        if (obj.x < 0) {
+          obj.x = 0;
+          obj.vx *= -0.3;
+        } else if (obj.x > canvas.width) {
+          obj.x = canvas.width;
+          obj.vx *= -0.3;
+        }
       }
 
+      // Chain reactions between blocks/pigs
       for (let i = 0; i < allObjects.length; i++) {
         for (let j = i + 1; j < allObjects.length; j++) {
           const a = allObjects[i];
@@ -322,17 +330,19 @@ window.addEventListener('load', () => {
           const dist = Math.hypot(dx, dy);
           const minDist = (a.width + b.width) / 2;
 
-          if (dist <= 0) continue;
+          if (dist <= 0) continue; // avoid division by zero
           if (dist < minDist) {
             const overlap = minDist - dist;
             const nx = dx / dist;
             const ny = dy / dist;
 
+            // push them apart
             a.x += nx * overlap * 0.5;
             a.y += ny * overlap * 0.5;
             b.x -= nx * overlap * 0.5;
             b.y -= ny * overlap * 0.5;
 
+            // exchange a fraction of velocities to produce chain push
             const push = 0.4;
             const ax = a.vx, ay = a.vy;
             a.vx = b.vx * push;
@@ -342,25 +352,29 @@ window.addEventListener('load', () => {
           }
         }
       }
-    }
-
-    function drawTrajectory(x, y) {
-      const { forkX, forkY } = getSlingGeometry();
-      const dx = forkX - x;
-      const dy = forkY - y;
-      const power = 0.2;
-      const vx = dx * power;
-      const vy = dy * power;
-      ctx.fillStyle = "black";
-      for (let t = 0; t < 60; t += 3) {
-        const px = x + vx * t;
-        const py = y + vy * t + 0.5 * gravity * t * t;
-        ctx.beginPath();
-        ctx.arc(px, py, 2, 0, Math.PI * 2);
-        ctx.fill();
+      if (gameStarted && pigs.length === 0 && birds.some(bird => bird.launched)) {
+        endGame("You Won!");
       }
     }
 
+ function drawTrajectory(x, y) {
+  const { forkX, forkY } = getSlingGeometry();
+  const dx = forkX - x;
+  const dy = forkY - y;
+  const power = 0.2;
+
+  const vx = dx * power;
+  const vy = dy * power;
+
+  ctx.fillStyle = "rgba(0,0,0,0.6)";
+  for (let t = 0; t < 60; t += 3) {  
+    const px = x + vx * t;
+    const py = y + vy * t + 0.5 * gravity * t * t;
+    ctx.beginPath();
+    ctx.arc(px, py, 3, 0, Math.PI * 2); 
+    ctx.fill();
+  }
+}
     canvas.addEventListener("click", (e) => {
       if (!all_images_loaded()) return;
       const mouse_x = e.clientX;
@@ -391,7 +405,7 @@ window.addEventListener('load', () => {
       }
     });
 
-    canvas.addEventListener("mousedown", (e) => {
+     canvas.addEventListener("mousedown", (e) => {
       if (e.button !== 0) return;
       if (slinger.held_bird && slinger.held_bird.onsling && !slinger.held_bird.launched) {
         dragging = true;
@@ -400,6 +414,7 @@ window.addEventListener('load', () => {
         drag_y = p.y;
       }
     });
+
     canvas.addEventListener("mousemove", (e) => {
       if (dragging) {
         const p = clampToFork(e.clientX, e.clientY);
@@ -407,6 +422,7 @@ window.addEventListener('load', () => {
         drag_y = p.y;
       }
     });
+  
     canvas.addEventListener("mouseup", (e) => {
       if (dragging && slinger.held_bird) {
         dragging = false;
@@ -424,8 +440,9 @@ window.addEventListener('load', () => {
       }
     });
 
-    function updateBirds() {
+        function updateBirds() {
       let allBirdsLaunchedAndOffScreen = true;
+
       for (const b of birds) {
         if (b.launched) {
           b.vy += gravity;
@@ -438,20 +455,24 @@ window.addEventListener('load', () => {
           allBirdsLaunchedAndOffScreen = false;
         }
       }
+
       if (allBirdsLaunchedAndOffScreen && pigs.length > 0) {
         endGame("Game Over! Try again.");
       }
     }
 
-    function draw() {
+
+        function draw() {
       if (!all_images_loaded()) {
         animationId = requestAnimationFrame(draw);
         return;
       }
+
       const time_gone = Date.now() - start_time;
       alpha = Math.min(time_gone / fade_time, 1);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+
       ctx.fillStyle = "#fff";
       ctx.font = "30px Arial";
       ctx.fillText("Score: " + score, 20, 40);
@@ -474,44 +495,83 @@ window.addEventListener('load', () => {
           ctx.rotate(rot);
           ctx.drawImage(bird.img, -size / 2, -size / 2, size, size);
           ctx.restore();
-
           if (t >= 1) {
             bird.picking = false;
-            slinger.held_bird = bird;
+            bird.x = tx;
+            bird.y = ty;
+            bird.vx = 0;
+            bird.vy = 0;
             bird.onsling = true;
+            slinger.held_bird = bird;
           }
-        } else if (!bird.launched) {
-          const size = bird_size * alpha;
-          ctx.drawImage(bird.img, bird.x - size / 2, bird.y - size / 2, size, size);
         } else {
-          const size = bird_size;
-          ctx.drawImage(bird.img, bird.x - size / 2, bird.y - size / 2, size, size);
+          if (bird !== slinger.held_bird || bird.launched) {
+            const size = bird_size * alpha;
+            ctx.drawImage(bird.img, bird.x - size / 2, bird.y - size / 2, size, size);
+          }
         }
       });
 
       blocks.forEach(block => {
-        ctx.drawImage(block.img, block.x - block.width / 2, block.y - block.height / 2, block.width, block.height);
+        const size = block.width * alpha;
+        ctx.drawImage(block.img, block.x - size / 2, block.y - size / 2, size, size);
       });
 
       pigs.forEach(pig => {
-        ctx.drawImage(pig.img, pig.x - pig.width / 2, pig.y - pig.height / 2, pig.width, pig.height);
+        const size = pig.width * alpha;
+        ctx.drawImage(pig.img, pig.x - size / 2, pig.y - size / 2, size, size);
       });
 
-      if (slinger.held_bird || dragging) draw_slinger();
-      handleCollisions();
+      draw_slinger();
       updateBirds();
+      handleCollisions();
+
       animationId = requestAnimationFrame(draw);
     }
 
-    start_time = Date.now();
-    generate_structure();
-    gameStarted = true;
-    draw();
+ const playBtn = document.getElementById("play");
+    playBtn.addEventListener("click", startGame);
 
-    slinger.baseX = birds[0].x;
-    slinger.held_bird = birds[0];
-    birds[0].onsling = true;
+    function startGame() {
+      const container = document.getElementById("container1");
+      if (container) container.style.display = "none";
 
+      start_time = Date.now();
+      generate_structure();
+      slinger.baseX = Math.max(...birds.map(b => b.x)) + 100;
+      slinger.baseY = bird_y + 20;
+      gameStarted = true;
+
+      function waitForImages() {
+        if (all_images_loaded()) {
+          draw();
+        } else {
+          requestAnimationFrame(waitForImages);
+        }
+      }
+      waitForImages();
+    }
+
+  
+    const replayBtn = document.getElementById("replayBtn");
+    if (replayBtn) {
+      replayBtn.addEventListener("click", () => {
+        if (score >= 4000) {
+          window.location.href = "../level2/level2.html";
+        } else {
+          const tag = document.getElementById("tagline");
+          if (tag) tag.textContent = "You don't have enough points to clear this level.";
+        }
+      });
+    }
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      bird_y = canvas.height - 135;
+      slinger.baseY = bird_y + 20;
+    });
   } catch (err) {
     console.error("Error initializing game:", err);
   }

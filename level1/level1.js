@@ -534,10 +534,6 @@ function generate_structure() {
     }
 
     const playBtn = document.getElementById("play");
-    if (!playBtn) {
-      console.error("Play button (#play) not found in DOM");
-      return;
-    }
     playBtn.addEventListener("click", startGame);
 
     function startGame() {
@@ -580,12 +576,7 @@ function generate_structure() {
       bird_y = canvas.height - 135;
       slinger.baseY = bird_y + 20;
     });
-
-  } catch (err) {
-    console.error("Error initializing level1.js:", err);
-  }
-});
-function returnkaro(){
+  function returnkaro(){
   window.location.href='../index.html';
 }
 window.addEventListener("keydown", (e) => {
@@ -603,3 +594,22 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
+  } catch (err) {
+    console.error("Error initializing level1.js:", err);
+  }
+});
+
+window.addEventListener("keydown", (e) => {
+  if (e.code === "Space") {
+ 
+    const activeBird = birds.find(b => b.launched && !b.abilityUsed);
+
+    if (activeBird) {
+      if (activeBird.ability === 0) {
+        activeBird.vx *= 1.8;  
+        activeBird.vy *= 0.8;  
+        activeBird.abilityUsed = true;
+      }
+    }
+  }
+});
