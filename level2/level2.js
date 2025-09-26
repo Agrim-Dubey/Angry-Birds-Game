@@ -62,74 +62,74 @@ window.addEventListener('load', () => {
     let score = 0;
     let animationId = null;
 
-  function generate_structure() {
-  blocks.length = 0;
-  pigs.length = 0;
+    function generate_structure() {
+      blocks.length = 0;
+      pigs.length = 0;
 
-  const base_y = bird_y + 5;
-  const numcolumns = 18;     
-  const maxcolumnheight = 12; 
+      const base_y = bird_y + 5;
+      const numcolumns = 18;
+      const maxcolumnheight = 12;
 
-  for (let col = 0; col < numcolumns; col++) {
-    const colheight = Math.floor(Math.random() * maxcolumnheight) + 3;
-    const colx = canvas.width * 0.35 + col * (block_size + 6); 
+      for (let col = 0; col < numcolumns; col++) {
+        const colheight = Math.floor(Math.random() * maxcolumnheight) + 3;
+        const colx = canvas.width * 0.35 + col * (block_size + 6);
 
-    for (let row = 0; row < colheight; row++) {
-      const yOffset = Math.random() < 0.2 ? -block_size/2 : 0;
-      const y = base_y - row * block_size + yOffset;
-      const img = new Image();
-      const randomBlock = block_images[Math.floor(Math.random() * block_images.length)];
-      img.src = randomBlock;
-      const block = {
-        img,
-        x: colx,
-        y,
-        width: block_size,
-        height: block_size,
-        loaded: false,
-        vx: 0,
-        vy: 0,
-        mass: 2
-      };
-      blocks.push(block);
-      img.onload = () => { block.loaded = true; };
-      img.onerror = () => { console.warn("Block image failed to load:", img.src); block.loaded = true; };
+        for (let row = 0; row < colheight; row++) {
+          const yOffset = Math.random() < 0.2 ? -block_size/2 : 0;
+          const y = base_y - row * block_size + yOffset;
+          const img = new Image();
+          const randomBlock = block_images[Math.floor(Math.random() * block_images.length)];
+          img.src = randomBlock;
+          const block = {
+            img,
+            x: colx,
+            y,
+            width: block_size,
+            height: block_size,
+            loaded: false,
+            vx: 0,
+            vy: 0,
+            mass: 2
+          };
+          blocks.push(block);
+          img.onload = () => { block.loaded = true; };
+          img.onerror = () => { console.warn("Block image failed to load:", img.src); block.loaded = true; };
+        }
+      }
+
+      const pigPositions = [
+        { colIndex: 2, rowOffset: 8 },
+        { colIndex: 5, rowOffset: 10 },
+        { colIndex: 9, rowOffset: 11 },
+        { colIndex: 12, rowOffset: 9 },
+        { colIndex: 16, rowOffset: 12 } // King pig
+      ];
+
+      for (let i = 0; i < pigPositions.length; i++) {
+        const pos = pigPositions[i];
+        const pigImg = new Image();
+        const isKing = i === pigPositions.length - 1;
+        pigImg.src = isKing ? "../Assets/kingpigasli.png" : "../Assets/basicpig.png";
+        const blockCol = blocks.filter(b => b.x === canvas.width * 0.35 + pos.colIndex * (block_size + 6));
+        const topBlock = blockCol.length ? blockCol[blockCol.length - 1] : { y: base_y };
+        const pig = {
+          img: pigImg,
+          x: topBlock.x,
+          y: topBlock.y - pos.rowOffset * block_size,
+          width: block_size,
+          height: block_size,
+          loaded: false,
+          hit: false,
+          vx: 0,
+          vy: 0,
+          mass: 1,
+          king: isKing
+        };
+        pigs.push(pig);
+        pigImg.onload = () => { pig.loaded = true; };
+        pigImg.onerror = () => { pig.loaded = true; };
+      }
     }
-  }
-
-  if (!blocks.length) return;
-
-  const pigPositions = [
-    { colIndex: 2, rowOffset: 8 },
-    { colIndex: 5, rowOffset: 10 },
-    { colIndex: 9, rowOffset: 11 },
-    { colIndex: 12, rowOffset: 9 },
-    { colIndex: 16, rowOffset: 12 } // King pig
-  ];
-
-  for (let i = 0; i < pigPositions.length; i++) {
-    const pos = pigPositions[i];
-    const pigImg = new Image();
-    pigImg.src = i === pigPositions.length-1 ? "../Assets/kingpigasli.png" : "../Assets/basicpig.png";
-    const blockCol = blocks.filter(b => b.x === canvas.width * 0.35 + pos.colIndex * (block_size + 6));
-    const topBlock = blockCol.length ? blockCol[blockCol.length - 1] : { y: base_y };
-    const pig = {
-      img: pigImg,
-      x: topBlock.x,
-      y: topBlock.y - pos.rowOffset * block_size,
-      width: block_size,
-      height: block_size,
-      loaded: false,
-      hit: false,
-      vx: 0,
-      vy: 0,
-      mass: 1
-    };
-    pigs.push(pig);
-    pigImg.onload = () => { pig.loaded = true; };
-    pigImg.onerror = () => { console.warn("Pig image failed to load:", pigImg.src); pig.loaded = true; };
-  }
-}
 
     function all_images_loaded() {
       const blocks_loaded = blocks.length ? blocks.every(b => b.loaded) : true;
@@ -257,20 +257,22 @@ window.addEventListener('load', () => {
           const dx = bird.x - pig.x;
           const dy = bird.y - pig.y;
           const distance = Math.hypot(dx, dy);
-          const combinedRadii = bird_size / 2 + pig.width / 2;
-
+          const combinedRadii = bird_size / 2 + pig.width / 2 + 5;
           if (distance < combinedRadii) {
             const impactSpeed = Math.hypot(bird.vx, bird.vy);
-
             if (impactSpeed > impactThreshold) {
+              if (pig.king) {
+                endGame("You Won!");
+              }
               pigs.splice(i, 1);
-              score += 1000;
+              score += pig.king ? 5000 : 1000;
             } else {
               pig.vx += bird.vx * 0.4;
               pig.vy += bird.vy * 0.4;
             }
           }
         }
+
         for (let i = blocks.length - 1; i >= 0; i--) {
           const block = blocks[i];
           const dx = bird.x - block.x;
@@ -280,7 +282,6 @@ window.addEventListener('load', () => {
 
           if (distance < combinedRadii) {
             const impactSpeed = Math.hypot(bird.vx, bird.vy);
-
             if (impactSpeed > impactThreshold * 1.5) {
               blocks.splice(i, 1);
               score += 200;
@@ -292,36 +293,26 @@ window.addEventListener('load', () => {
         }
       }
 
-      // Physics update for pigs & blocks
       const allObjects = [...blocks, ...pigs];
       for (const obj of allObjects) {
         obj.vy += gravity;
         obj.x += obj.vx;
         obj.y += obj.vy;
 
-        obj.vx *= 0.95; // damping
+        obj.vx *= 0.95;
         obj.vy *= 0.95;
 
-        // clamp to bird-level ground (bird_y)
         const groundY = bird_y;
         if (obj.y + obj.height / 2 > groundY) {
           obj.y = groundY - obj.height / 2;
-          obj.vy *= -0.4; // bounce/damping
-          // small friction on ground
+          obj.vy *= -0.4;
           obj.vx *= 0.6;
         }
 
-        // keep inside canvas roughly
-        if (obj.x < 0) {
-          obj.x = 0;
-          obj.vx *= -0.3;
-        } else if (obj.x > canvas.width) {
-          obj.x = canvas.width;
-          obj.vx *= -0.3;
-        }
+        if (obj.x < 0) { obj.x = 0; obj.vx *= -0.3; }
+        else if (obj.x > canvas.width) { obj.x = canvas.width; obj.vx *= -0.3; }
       }
 
-      // Chain reactions between blocks/pigs
       for (let i = 0; i < allObjects.length; i++) {
         for (let j = i + 1; j < allObjects.length; j++) {
           const a = allObjects[i];
@@ -331,19 +322,17 @@ window.addEventListener('load', () => {
           const dist = Math.hypot(dx, dy);
           const minDist = (a.width + b.width) / 2;
 
-          if (dist <= 0) continue; // avoid division by zero / NaN
+          if (dist <= 0) continue;
           if (dist < minDist) {
             const overlap = minDist - dist;
             const nx = dx / dist;
             const ny = dy / dist;
 
-            // push them apart
             a.x += nx * overlap * 0.5;
             a.y += ny * overlap * 0.5;
             b.x -= nx * overlap * 0.5;
             b.y -= ny * overlap * 0.5;
 
-            // exchange a fraction of velocities to produce chain push
             const push = 0.4;
             const ax = a.vx, ay = a.vy;
             a.vx = b.vx * push;
@@ -353,30 +342,24 @@ window.addEventListener('load', () => {
           }
         }
       }
-      if (gameStarted && pigs.length === 0 && birds.some(bird => bird.launched)) {
-        endGame("You Won!");
-      }
     }
 
     function drawTrajectory(x, y) {
-  const { forkX, forkY } = getSlingGeometry();
-  const dx = forkX - x;
-  const dy = forkY - y;
-  const power = 0.2;
-
-  const vx = dx * power;
-  const vy = dy * power;
-
-  ctx.fillStyle = "black";
-
-  for (let t = 0; t < 60; t += 3) { 
-    const px = x + vx * t;
-    const py = y + vy * t + 0.5 * gravity * t * t;
-    ctx.beginPath();
-    ctx.arc(px, py, 2, 0, Math.PI * 2); 
-    ctx.fill();
-  }
-}
+      const { forkX, forkY } = getSlingGeometry();
+      const dx = forkX - x;
+      const dy = forkY - y;
+      const power = 0.2;
+      const vx = dx * power;
+      const vy = dy * power;
+      ctx.fillStyle = "black";
+      for (let t = 0; t < 60; t += 3) {
+        const px = x + vx * t;
+        const py = y + vy * t + 0.5 * gravity * t * t;
+        ctx.beginPath();
+        ctx.arc(px, py, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
 
     canvas.addEventListener("click", (e) => {
       if (!all_images_loaded()) return;
@@ -443,7 +426,6 @@ window.addEventListener('load', () => {
 
     function updateBirds() {
       let allBirdsLaunchedAndOffScreen = true;
-
       for (const b of birds) {
         if (b.launched) {
           b.vy += gravity;
@@ -456,7 +438,6 @@ window.addEventListener('load', () => {
           allBirdsLaunchedAndOffScreen = false;
         }
       }
-
       if (allBirdsLaunchedAndOffScreen && pigs.length > 0) {
         endGame("Game Over! Try again.");
       }
@@ -467,12 +448,10 @@ window.addEventListener('load', () => {
         animationId = requestAnimationFrame(draw);
         return;
       }
-
       const time_gone = Date.now() - start_time;
       alpha = Math.min(time_gone / fade_time, 1);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
-
       ctx.fillStyle = "#fff";
       ctx.font = "30px Arial";
       ctx.fillText("Score: " + score, 20, 40);
@@ -495,93 +474,45 @@ window.addEventListener('load', () => {
           ctx.rotate(rot);
           ctx.drawImage(bird.img, -size / 2, -size / 2, size, size);
           ctx.restore();
+
           if (t >= 1) {
             bird.picking = false;
-            bird.x = tx;
-            bird.y = ty;
-            bird.vx = 0;
-            bird.vy = 0;
-            bird.onsling = true;
             slinger.held_bird = bird;
+            bird.onsling = true;
           }
+        } else if (!bird.launched) {
+          const size = bird_size * alpha;
+          ctx.drawImage(bird.img, bird.x - size / 2, bird.y - size / 2, size, size);
         } else {
-          if (bird !== slinger.held_bird || bird.launched) {
-            const size = bird_size * alpha;
-            ctx.drawImage(bird.img, bird.x - size / 2, bird.y - size / 2, size, size);
-          }
+          const size = bird_size;
+          ctx.drawImage(bird.img, bird.x - size / 2, bird.y - size / 2, size, size);
         }
       });
 
       blocks.forEach(block => {
-        const size = block.width * alpha;
-        ctx.drawImage(block.img, block.x - size / 2, block.y - size / 2, size, size);
+        ctx.drawImage(block.img, block.x - block.width / 2, block.y - block.height / 2, block.width, block.height);
       });
 
       pigs.forEach(pig => {
-        const size = pig.width * alpha;
-        ctx.drawImage(pig.img, pig.x - size / 2, pig.y - size / 2, size, size);
+        ctx.drawImage(pig.img, pig.x - pig.width / 2, pig.y - pig.height / 2, pig.width, pig.height);
       });
 
-      draw_slinger();
-      updateBirds();
+      if (slinger.held_bird || dragging) draw_slinger();
       handleCollisions();
-
+      updateBirds();
       animationId = requestAnimationFrame(draw);
     }
 
-    const playBtn = document.getElementById("play");
-    if (!playBtn) {
-      console.error("Play button (#play) not found in DOM");
-      return;
-    }
-    playBtn.addEventListener("click", startGame);
+    start_time = Date.now();
+    generate_structure();
+    gameStarted = true;
+    draw();
 
-    function startGame() {
-      const container = document.getElementById("container1");
-      if (container) container.style.display = "none";
-
-      start_time = Date.now();
-      generate_structure();
-      slinger.baseX = Math.max(...birds.map(b => b.x)) + 100;
-      slinger.baseY = bird_y + 20;
-      gameStarted = true;
-
-      function waitForImages() {
-        if (all_images_loaded()) {
-          draw();
-        } else {
-          requestAnimationFrame(waitForImages);
-        }
-      }
-      waitForImages();
-    }
-
-  
-    const replayBtn = document.getElementById("replayBtn");
-    if (replayBtn) {
-      replayBtn.addEventListener("click", () => {
-        if (score >= 4000) {
-          window.location.href = "../level2/level2.html";
-        } else {
-          const tag = document.getElementById("tagline");
-          if (tag) tag.textContent = "You don't have enough points to clear this level.";
-        }
-      });
-    }
-
-    window.addEventListener('resize', () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-
-      bird_y = canvas.height - 135;
-      slinger.baseY = bird_y + 20;
-    });
+    slinger.baseX = birds[0].x;
+    slinger.held_bird = birds[0];
+    birds[0].onsling = true;
 
   } catch (err) {
-    console.error("Error initializing level1.js:", err);
+    console.error("Error initializing game:", err);
   }
 });
-function returnkaro(){
-  window.location.href='../index.html';
-}
-

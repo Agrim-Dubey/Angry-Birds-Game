@@ -58,7 +58,7 @@ window.addEventListener('load', () => {
     const blocks = [];
     const pigs = [];
     let score = 0;
-    let animationId = null;
+
 
 function generate_structure() {
   blocks.length = 0;
@@ -132,10 +132,6 @@ function generate_structure() {
     pigImg.onerror = () => { console.warn("Pig image failed to load:", pigImg.src); pig.loaded = true; };
   }
 }
-
-
-
-
     function all_images_loaded() {
       const blocks_loaded = blocks.length ? blocks.every(b => b.loaded) : true;
       const pigs_loaded = pigs.length ? pigs.every(p => p.loaded) : true;
