@@ -62,63 +62,74 @@ window.addEventListener('load', () => {
     let score = 0;
     let animationId = null;
 
-    function generate_structure() {
-      blocks.length = 0;
-      pigs.length = 0;
+  function generate_structure() {
+  blocks.length = 0;
+  pigs.length = 0;
 
-      const base_y = bird_y+10;
-      const numcolumns = Math.floor(Math.random() * 3) + 12;
-      const maxcolumnheight = 10;
+  const base_y = bird_y + 5;
+  const numcolumns = 18;     
+  const maxcolumnheight = 12; 
 
-      for (let col = 0; col < numcolumns; col++) {
-        const colheight = Math.floor(Math.random() * maxcolumnheight) + 1;
-        const colx = canvas.width * 0.4 + col * (block_size + 10);
+  for (let col = 0; col < numcolumns; col++) {
+    const colheight = Math.floor(Math.random() * maxcolumnheight) + 3;
+    const colx = canvas.width * 0.35 + col * (block_size + 6); 
 
-        for (let row = 0; row < colheight; row++) {
-          const y = base_y - row * block_size;
-          const img = new Image();
-          const randomBlock = block_images[Math.floor(Math.random() * block_images.length)];
-          img.src = randomBlock;
-          const block = {
-            img,
-            x: colx,
-            y,
-            width: block_size,
-            height: block_size,
-            loaded: false,
-            vx: 0,
-            vy: 0,
-            mass: 2
-          };
-          blocks.push(block);
-          img.onload = () => { block.loaded = true; };
-          img.onerror = () => { console.warn("Block image failed to load:", img.src); block.loaded = true; };
-        }
-      }
-
-      if (!blocks.length) return;
-
-      const tallest_y = Math.min(...blocks.map(b => b.y));
-      const top_blocks = blocks.filter(b => b.y === tallest_y);
-      const pig_block = top_blocks[Math.floor(Math.random() * top_blocks.length)];
-      const pigimg = new Image();
-      pigimg.src = "../Assets/kingpigasli.png";
-      const pig = {
-        img: pigimg,
-        x: pig_block.x,
-        y: pig_block.y - block_size,
+    for (let row = 0; row < colheight; row++) {
+      const yOffset = Math.random() < 0.2 ? -block_size/2 : 0;
+      const y = base_y - row * block_size + yOffset;
+      const img = new Image();
+      const randomBlock = block_images[Math.floor(Math.random() * block_images.length)];
+      img.src = randomBlock;
+      const block = {
+        img,
+        x: colx,
+        y,
         width: block_size,
         height: block_size,
         loaded: false,
-        hit: false,
         vx: 0,
         vy: 0,
-        mass: 1
+        mass: 2
       };
-      pigs.push(pig);
-      pigimg.onload = () => { pig.loaded = true; };
-      pigimg.onerror = () => { console.warn("Pig image failed to load:", pigimg.src); pig.loaded = true; };
+      blocks.push(block);
+      img.onload = () => { block.loaded = true; };
+      img.onerror = () => { console.warn("Block image failed to load:", img.src); block.loaded = true; };
     }
+  }
+
+  if (!blocks.length) return;
+
+  const pigPositions = [
+    { colIndex: 2, rowOffset: 8 },
+    { colIndex: 5, rowOffset: 10 },
+    { colIndex: 9, rowOffset: 11 },
+    { colIndex: 12, rowOffset: 9 },
+    { colIndex: 16, rowOffset: 12 } // King pig
+  ];
+
+  for (let i = 0; i < pigPositions.length; i++) {
+    const pos = pigPositions[i];
+    const pigImg = new Image();
+    pigImg.src = i === pigPositions.length-1 ? "../Assets/kingpigasli.png" : "../Assets/basicpig.png";
+    const blockCol = blocks.filter(b => b.x === canvas.width * 0.35 + pos.colIndex * (block_size + 6));
+    const topBlock = blockCol.length ? blockCol[blockCol.length - 1] : { y: base_y };
+    const pig = {
+      img: pigImg,
+      x: topBlock.x,
+      y: topBlock.y - pos.rowOffset * block_size,
+      width: block_size,
+      height: block_size,
+      loaded: false,
+      hit: false,
+      vx: 0,
+      vy: 0,
+      mass: 1
+    };
+    pigs.push(pig);
+    pigImg.onload = () => { pig.loaded = true; };
+    pigImg.onerror = () => { console.warn("Pig image failed to load:", pigImg.src); pig.loaded = true; };
+  }
+}
 
     function all_images_loaded() {
       const blocks_loaded = blocks.length ? blocks.every(b => b.loaded) : true;
@@ -348,25 +359,24 @@ window.addEventListener('load', () => {
     }
 
     function drawTrajectory(x, y) {
-      const { forkX, forkY } = getSlingGeometry();
-      const dx = forkX - x;
-      const dy = forkY - y;
-      const power = 0.2;
+  const { forkX, forkY } = getSlingGeometry();
+  const dx = forkX - x;
+  const dy = forkY - y;
+  const power = 0.2;
 
-      const vx = dx * power;
-      const vy = dy * power;
+  const vx = dx * power;
+  const vy = dy * power;
 
-      ctx.strokeStyle = "black";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      for (let t = 0; t < 60; t++) {
-        const px = x + vx * t;
-        const py = y + vy * t + 0.5 * gravity * t * t;
-        ctx.lineTo(px, py);
-      }
-      ctx.stroke();
-    }
+  ctx.fillStyle = "black";
+
+  for (let t = 0; t < 60; t += 3) { 
+    const px = x + vx * t;
+    const py = y + vy * t + 0.5 * gravity * t * t;
+    ctx.beginPath();
+    ctx.arc(px, py, 2, 0, Math.PI * 2); 
+    ctx.fill();
+  }
+}
 
     canvas.addEventListener("click", (e) => {
       if (!all_images_loaded()) return;
