@@ -64,19 +64,24 @@ function generate_structure() {
   blocks.length = 0;
   pigs.length = 0;
 
-  const base_y = bird_y;
-  const layout = [
-    { x: canvas.width * 0.55, heights: [0,1,2,3], type: 0 },
-    { x: canvas.width * 0.55 + 30, heights: [0,1,2,3,4], type: 1 },
-    { x: canvas.width * 0.55 + 60, heights: [0,1,2], type: 0 },
-    { x: canvas.width * 0.55 + 90, heights: [0,1,2,3,4,5], type: 1 },
-    { x: canvas.width * 0.55 + 120, heights: [0,1,2,3], type: 0 },
-    { x: canvas.width * 0.55 + 150, heights: [0,1], type: 1 },
-    { x: canvas.width * 0.55 + 180, heights: [0,1,2,3,4], type: 0 },
-    { x: canvas.width * 0.55 + 210, heights: [0,1,2], type: 1 },
-    { x: canvas.width * 0.55 + 240, heights: [0,1,2,3], type: 0 },
-    { x: canvas.width * 0.55 + 270, heights: [0,1,2,3,4], type: 1 },
-  ];
+  const base_y = bird_y; 
+
+
+ const layout = [
+  { x: canvas.width * 0.55,     heights: [0,1,2,3,4,5,6], type: 0 },
+  { x: canvas.width * 0.55 + 30, heights: [0,1,2,3,4,5,6,7], type: 1 },
+  { x: canvas.width * 0.55 + 60, heights: [0,1,2,3], type: 0 },
+  { x: canvas.width * 0.55 + 90, heights: [0,1,2,3,4,5,6,7,8], type: 1 },
+  { x: canvas.width * 0.55 + 120, heights: [0,1,2,3,4], type: 0 },
+  { x: canvas.width * 0.55 + 150, heights: [0,1,2,3,4,5], type: 1 },
+  { x: canvas.width * 0.55 + 180, heights: [0,1,2,3,4,5,6,7], type: 0 },
+  { x: canvas.width * 0.55 + 210, heights: [0,1,2,3], type: 1 },
+  { x: canvas.width * 0.55 + 240, heights: [0,1,2,3,4,5,6], type: 0 },
+  { x: canvas.width * 0.55 + 270, heights: [0,1,2,3,4,5,6,7], type: 1 },
+  { x: canvas.width * 0.55 + 300, heights: [2,3,4,5,6], type: 0 }, // floating pig space
+  { x: canvas.width * 0.55 + 330, heights: [0,1,2,3,4,5,6,7,8,9], type: 1 }, // max tower
+];
+
   for (const col of layout) {
     for (const h of col.heights) {
       const y = base_y - h * block_size;
@@ -357,6 +362,26 @@ function generate_structure() {
         endGame("You Won!");
       }
     }
+    
+
+  function drawTrajectory(x, y) {
+  const { forkX, forkY } = getSlingGeometry();
+  const dx = forkX - x;
+  const dy = forkY - y;
+  const power = 0.2;
+
+  const vx = dx * power;
+  const vy = dy * power;
+
+  ctx.fillStyle = "rgba(0,0,0,0.6)";
+  for (let t = 0; t < 60; t += 3) {  
+    const px = x + vx * t;
+    const py = y + vy * t + 0.5 * gravity * t * t;
+    ctx.beginPath();
+    ctx.arc(px, py, 3, 0, Math.PI * 2); 
+    ctx.fill();
+  }
+}
 
 
     canvas.addEventListener("click", (e) => {
@@ -576,5 +601,9 @@ window.addEventListener("keydown", (e) => {
       if (activeBird.ability === 0) {
         activeBird.vx *= 1.8;  
         activeBird.vy *= 0.8;  
-        activeBird.abilityUsed = true;}}}});
+        activeBird.abilityUsed = true;
+      }
+    }
+  }
+});
 
