@@ -235,14 +235,10 @@ window.addEventListener('load', () => {
       }
     }
 
-    function handleCollisions() {
+ function handleCollisions() {
       const impactThreshold = 6;
-
-      // Bird hitting pigs/blocks
       for (const bird of birds) {
         if (!bird.launched) continue;
-
-        // pigs
         for (let i = pigs.length - 1; i >= 0; i--) {
           const pig = pigs[i];
           const dx = bird.x - pig.x;
@@ -262,8 +258,6 @@ window.addEventListener('load', () => {
             }
           }
         }
-
-        // blocks
         for (let i = blocks.length - 1; i >= 0; i--) {
           const block = blocks[i];
           const dx = bird.x - block.x;
@@ -324,7 +318,7 @@ window.addEventListener('load', () => {
           const dist = Math.hypot(dx, dy);
           const minDist = (a.width + b.width) / 2;
 
-          if (dist <= 0) continue; // avoid division by zero / NaN
+          if (dist <= 0) continue; // avoid division by zero
           if (dist < minDist) {
             const overlap = minDist - dist;
             const nx = dx / dist;
@@ -346,12 +340,11 @@ window.addEventListener('load', () => {
           }
         }
       }
-
-      // Win check
       if (gameStarted && pigs.length === 0 && birds.some(bird => bird.launched)) {
         endGame("You Won!");
       }
     }
+    
 
     function drawTrajectory(x, y) {
       const { forkX, forkY } = getSlingGeometry();

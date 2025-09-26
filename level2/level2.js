@@ -574,15 +574,4 @@ window.addEventListener('load', () => {
 function returnkaro(){
   window.location.href='../index.html';
 }
-window.addEventListener("keydown", (e) => {
-  if (e.code === "Space") {
-    const activeBird = birds.find(b => b.launched && !b.abilityUsed);
-    if (activeBird) {
-      if (activeBird.ability === 0) {
-        activeBird.vx *= 1.8;  
-        activeBird.vy *= 0.8;  
-        activeBird.abilityUsed = true;
-      }
-    }
-  }
-});
+
